@@ -6,12 +6,16 @@ import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Questions from "./Questions";
 import { useEffect } from "react";
+import NextButton from "./NextButton";
+import Progress from "./Progress";
 // import { useDispatch } from 'react-redux';
 
 const initialState = {
   questions: [],
   status: "loading",
-  index:0,
+  index: 0,
+  answer: null,
+  points: 0,
 };
 function reducer(state, action) {
   console.log("Reducer action:", action); // Log dispatched actions
@@ -22,16 +26,33 @@ function reducer(state, action) {
         questions: action.payload,
         status: "ready",
       };
-    case "dataFailed": 
-    return {
-      ...state,
-      status:"error",
-    };
-    case "start": 
-    return {
-      ...state,
-      status: "active",
-    };
+    case "dataFailed":
+      return {
+        ...state,
+        status: "error",
+      };
+    case "start":
+      return {
+        ...state,
+        status: "active",
+      };
+    case "newAnswer":
+      const question = state.questions.at(state.index);
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === question.correctOption
+            ? state.points + question.points
+            : state.points,
+      };
+    case "newQuestion":
+      return {
+        ...state,
+        index: state.index + 1,
+        answer: null,
+      };
+
     default:
       throw new Error("Action is unknown ");
   }
@@ -39,7 +60,7 @@ function reducer(state, action) {
 
 export default function App() {
   // const { state, dispatch } = useReducer(reducer, initialState);
-  
+
   // useEffect(() => {
   //   fetch("http://localhost:8000/questions")
   //     .then((res) => res.json())
@@ -48,24 +69,28 @@ export default function App() {
   //       console.error("Error fetching or processing data:", err);
   //     });
   // }, [dispatch]);
-const [{questions, status,index}, dispatch] = useReducer(reducer, initialState);
-const numQuestions = questions.length;
+  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
+  const numQuestions = questions.length;
+  const maxpoints = questions.reduce((pre,cur)=>pre+cur.points ,0);
 
   useEffect(() => {
-    console.log('Dispatch:', dispatch); // Check dispatch
+    console.log("Dispatch:", dispatch); // Check dispatch
     fetch("http://localhost:8000/questions")
       .then((res) => {
         if (!res.ok) {
-          throw new Error('Failed to fetch questions');
+          throw new Error("Failed to fetch questions");
         }
         return res.json();
       })
       .then((data) => {
-        console.log('Fetched data:', data);
+        console.log("Fetched data:", data);
         dispatch({ type: "dataReceived", payload: data });
-      })  
+      })
       .catch((err) => {
-        dispatch({type: "dataFailed"});
+        dispatch({ type: "dataFailed" });
         // console.error("Error fetching or processing data:", err);
       });
   }, [dispatch]);
@@ -75,11 +100,26 @@ const numQuestions = questions.length;
       <Header />
 
       <Main>
-       {status === "loading" && <Loader />} 
-       {status === "error" && <Error />}
-       {status ===  "ready" && <StartScreen numQuestions={numQuestions} dispatch={dispatch}/>}
-       {status === "active" && <Questions question={questions[index]} />}
+        {status === "loading" && <Loader />}
+        {status === "error" && <Error />}
+        {status === "ready" && (
+          <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
+        )}
+        {status === "active" && (
+          <>
+          <Progress index={index} numQuestions={numQuestions} points={points} maxpoints={maxpoints} answer={answer}/>
+          <Questions
+            question={questions[index]}
+            dispatch={dispatch}
+            answer={answer}
+            points={points}
+
+
+          />
+          <NextButton dispatch={dispatch} answer={answer} />
+          </>
+        )}
       </Main>
     </div>
   );
-}   
+}
