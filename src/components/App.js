@@ -8,6 +8,7 @@ import Questions from "./Questions";
 import { useEffect } from "react";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
+import Finish from "./Finish";
 // import { useDispatch } from 'react-redux';
 
 const initialState = {
@@ -52,6 +53,19 @@ function reducer(state, action) {
         index: state.index + 1,
         answer: null,
       };
+    case "setfinish":
+      return{
+        ...state,
+        status:"finish",
+      }
+    case "restart":
+      return{
+        ...state,
+        status: "ready",
+        index: 0,
+        answer: null,
+        points: 0,
+      }
 
     default:
       throw new Error("Action is unknown ");
@@ -116,9 +130,14 @@ export default function App() {
 
 
           />
-          <NextButton dispatch={dispatch} answer={answer} />
+          <NextButton dispatch={dispatch} answer={answer} index={index} numQuestions={numQuestions} />
           </>
         )}
+        {
+          status==="finish" && <Finish points={points} maxpoints={maxpoints} dispatch={dispatch}
+      
+          />
+        }
       </Main>
     </div>
   );
