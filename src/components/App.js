@@ -9,6 +9,8 @@ import { useEffect } from "react";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
 import Finish from "./Finish";
+import Footer from "./footer";
+import Timer from "./Timer";
 // import { useDispatch } from 'react-redux';
 
 const initialState = {
@@ -54,18 +56,18 @@ function reducer(state, action) {
         answer: null,
       };
     case "setfinish":
-      return{
+      return {
         ...state,
-        status:"finish",
-      }
+        status: "finish",
+      };
     case "restart":
-      return{
+      return {
         ...state,
         status: "ready",
         index: 0,
         answer: null,
         points: 0,
-      }
+      };
 
     default:
       throw new Error("Action is unknown ");
@@ -88,7 +90,7 @@ export default function App() {
     initialState
   );
   const numQuestions = questions.length;
-  const maxpoints = questions.reduce((pre,cur)=>pre+cur.points ,0);
+  const maxpoints = questions.reduce((pre, cur) => pre + cur.points, 0);
 
   useEffect(() => {
     console.log("Dispatch:", dispatch); // Check dispatch
@@ -121,23 +123,34 @@ export default function App() {
         )}
         {status === "active" && (
           <>
-          <Progress index={index} numQuestions={numQuestions} points={points} maxpoints={maxpoints} answer={answer}/>
-          <Questions
-            question={questions[index]}
-            dispatch={dispatch}
-            answer={answer}
-            points={points}
-
-
-          />
-          <NextButton dispatch={dispatch} answer={answer} index={index} numQuestions={numQuestions} />
+            <Progress
+              index={index}
+              numQuestions={numQuestions}
+              points={points}
+              maxpoints={maxpoints}
+              answer={answer}
+            />
+            <Questions
+              question={questions[index]}
+              dispatch={dispatch}
+              answer={answer}
+              points={points}
+            />
+            <Footer>
+            <Timer />
+              <NextButton
+                dispatch={dispatch}
+                answer={answer}
+                index={index}
+                numQuestions={numQuestions}
+              />  
+              
+            </Footer>
           </>
         )}
-        {
-          status==="finish" && <Finish points={points} maxpoints={maxpoints} dispatch={dispatch}
-      
-          />
-        }
+        {status === "finish" && (
+          <Finish points={points} maxpoints={maxpoints} dispatch={dispatch} />
+        )}
       </Main>
     </div>
   );
