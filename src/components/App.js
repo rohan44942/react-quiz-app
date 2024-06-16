@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
 import Finish from "./Finish";
-import Footer from "./footer";
+import Footer from "./Footerlast";
 import Timer from "./Timer";
 // import { useDispatch } from 'react-redux';
 
@@ -19,6 +19,7 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
+  tick: 10,
 };
 function reducer(state, action) {
   console.log("Reducer action:", action); // Log dispatched actions
@@ -69,6 +70,12 @@ function reducer(state, action) {
         points: 0,
       };
 
+    case "finish":
+      return {
+        ...state,
+        status: "finish",
+      };
+
     default:
       throw new Error("Action is unknown ");
   }
@@ -85,10 +92,8 @@ export default function App() {
   //       console.error("Error fetching or processing data:", err);
   //     });
   // }, [dispatch]);
-  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
-    reducer,
-    initialState
-  );
+  const [{ questions, status, index, answer, points, tick }, dispatch] =
+    useReducer(reducer, initialState);
   const numQuestions = questions.length;
   const maxpoints = questions.reduce((pre, cur) => pre + cur.points, 0);
 
@@ -137,14 +142,13 @@ export default function App() {
               points={points}
             />
             <Footer>
-            <Timer />
+              <Timer tick={tick} dispatch={dispatch} />
               <NextButton
                 dispatch={dispatch}
                 answer={answer}
                 index={index}
                 numQuestions={numQuestions}
-              />  
-              
+              />
             </Footer>
           </>
         )}
